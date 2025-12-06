@@ -261,6 +261,31 @@ def get_stats():
         "ai_provider": "Gemini"
     }
 
+@app.post("/translate")
+async def translate_text(request: dict):
+    """Translate text to Urdu using Gemini"""
+    text = request.get("text", "")
+    target_language = request.get("target_language", "urdu")
+    
+    if not text:
+        raise HTTPException(status_code=400, detail="No text provided")
+    
+    prompt = f"""Translate the following English text to {target_language}. 
+    Maintain technical terminology where appropriate.
+    Only return the translated text, nothing else.
+    
+    Text: {text}
+    
+    Translation:"""
+    
+    response = gemini_model.generate_content(prompt)
+    
+    return {
+        "original_text": text,
+        "translated_text": response.text.strip(),
+        "target_language": target_language
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
